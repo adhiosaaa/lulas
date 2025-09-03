@@ -10,6 +10,7 @@
       color: #333;
       text-align: center;
       padding: 40px;
+      overflow-x: hidden;
     }
     .card {
       background: white;
@@ -18,6 +19,8 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);
       max-width: 700px;
       margin: auto;
+      position: relative;
+      z-index: 2;
     }
     h1, h2 {
       color: #e91e63;
@@ -49,9 +52,26 @@
       border-radius: 20px;
       max-width: 100%;
     }
+    /* canvas confetti */
+    #confetti-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
   </style>
 </head>
 <body>
+  <!-- musik -->
+  <audio id="bg-music" autoplay loop>
+    <source src="music.mp3" type="audio/mpeg">
+    Browsermu tidak mendukung audio 😢
+  </audio>
+
+  <!-- confetti canvas -->
+  <canvas id="confetti-canvas"></canvas>
+
   <div class="card">
     <div id="slide"></div>
   </div>
@@ -113,6 +133,7 @@
           <p>🎂 Selamat Ulang Tahun 🎂</p>
           <img src="foto.jpg" alt="Foto kita">
         `;
+        startConfetti();
       }
     }
 
@@ -122,6 +143,56 @@
     }
 
     showSlide();
+
+    // ====== CONFETTI SCRIPT ======
+    const confettiCanvas = document.getElementById('confetti-canvas');
+    const ctx = confettiCanvas.getContext('2d');
+    let confettiPieces = [];
+
+    function resizeCanvas() {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Confetti {
+      constructor() {
+        this.x = Math.random() * confettiCanvas.width;
+        this.y = Math.random() * confettiCanvas.height - confettiCanvas.height;
+        this.size = Math.random() * 8 + 2;
+        this.speed = Math.random() * 3 + 2;
+        this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+      }
+      update() {
+        this.y += this.speed;
+        if (this.y > confettiCanvas.height) {
+          this.y = -10;
+          this.x = Math.random() * confettiCanvas.width;
+        }
+      }
+      draw() {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.size, this.size);
+      }
+    }
+
+    function startConfetti() {
+      for (let i = 0; i < 150; i++) {
+        confettiPieces.push(new Confetti());
+      }
+      animateConfetti();
+    }
+
+    function animateConfetti() {
+      ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      confettiPieces.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animateConfetti);
+    }
   </script>
 </body>
 </html>
+
